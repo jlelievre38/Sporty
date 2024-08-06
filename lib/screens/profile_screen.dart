@@ -9,7 +9,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Récupère l'ID de l'utilisateur actuel
     String userId = user?.uid ?? '';
 
     return Scaffold(
@@ -19,15 +18,12 @@ class ProfileScreen extends StatelessWidget {
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
         builder: (context, snapshot) {
-          // Gestion des états de chargement
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-          // Gestion des erreurs
           if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
           }
-          // Vérifie si les données existent
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return Center(child: Text('Aucune donnée trouvée'));
           }
@@ -50,11 +46,37 @@ class ProfileScreen extends StatelessWidget {
                 Text("Âge: ${userData['age'] ?? 'Inconnu'}", style: TextStyle(fontSize: 18)),
                 Text("Sexe: ${userData['gender'] ?? 'Inconnu'}", style: TextStyle(fontSize: 18)),
                 SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text("Retour"),
+                Text("Historique des pas:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userId)
+                        .collection('daily_steps')
+                        .orderBy('date', descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Erreur: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(child: Text('Aucune donnée trouvée'));
+                      }
+
+                      return ListView(
+                        children: snapshot.data!.docs.map((doc) {
+                          var data = doc.data() as Map<String, dynamic>;
+                          return ListTile(
+                            title: Text('Date: ${data['date'].toDate()}'),
+                            subtitle: Text('Pas: ${data['steps']}'),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

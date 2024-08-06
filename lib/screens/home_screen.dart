@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'profile_screen.dart';
 import 'sign_in_screen.dart';
-import 'profile_screen.dart'; // Assure-toi que le chemin est correct
+import '../widget/pedometer_widget.dart'; // Importation correcte du widget de podomètre
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -32,7 +33,24 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text("Bienvenue !"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Bienvenue sur Sporty!",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PedometerScreen(), // Utilisez le bon nom ici
+                ));
+              },
+              child: Text("Voir Podomètre"),
+            ),
+          ],
+        ),
       ),
     );
   }
